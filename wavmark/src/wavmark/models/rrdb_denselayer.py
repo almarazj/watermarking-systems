@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 from ..models import module_util as mutil
-from torchsummary import summary
+# from torchsummary import summary
 
 # Dense connection
 class ResidualDenseBlock_out(nn.Module):
@@ -24,7 +24,7 @@ class ResidualDenseBlock_out(nn.Module):
         x5 = self.conv5(torch.cat((x, x1, x2, x3, x4), 1))
         return x5
     
-model = ResidualDenseBlock_out(2, 2)  # Usa los parámetros que correspondan a tu caso
-total_params = sum(p.numel() for p in model.parameters())
-print(f"El modelo tiene {total_params} parámetros")
-summary(model, (2, 41, 501))
+# model = ResidualDenseBlock_out(2, 2)  # Usa los parámetros que correspondan a tu caso
+# total_params = sum(p.numel() for p in model.parameters())
+# print(f"El modelo tiene {total_params} parámetros")
+# summary(model, (2, 41, 501))

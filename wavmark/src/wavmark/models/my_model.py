@@ -3,7 +3,6 @@ import torch.nn as nn
 from ..models.hinet import Hinet
 import numpy as np
 import random
-from torchsummary import summary
 
 
 class Model(nn.Module):
@@ -57,7 +56,7 @@ class Model(nn.Module):
         signal2, watermark2 = self.hinet(signal, watermark, rev)
         return signal2.permute(0, 3, 2, 1), watermark2.permute(0, 3, 2, 1)
 
-model = Model(num_point=16000, num_bit=16, n_fft=1000, hop_length=400, num_layers=16)  # Usa los parámetros que correspondan a tu caso
-total_params = sum(p.numel() for p in model.parameters())
-print(f"El modelo tiene {total_params} parámetros")
-summary(model, (1, 16000))
+# model = Model(num_point=16000, num_bit=16, n_fft=1000, hop_length=400, num_layers=16)  # Usa los parámetros que correspondan a tu caso
+# total_params = sum(p.numel() for p in model.parameters())
+# print(f"El modelo tiene {total_params} parámetros")
+# summary(model, (1, 16000))
