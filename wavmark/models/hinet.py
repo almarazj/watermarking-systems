@@ -1,5 +1,5 @@
 import torch
-from ..models.invblock import INV_block
+from models.invblock import INV_block
 
 
 class Hinet(torch.nn.Module):

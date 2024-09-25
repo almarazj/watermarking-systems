@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-from ..models import module_util as mutil
+from models import module_util as mutil
 # from torchsummary import summary
 
 # Dense connection

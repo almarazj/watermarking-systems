@@ -1,6 +1,6 @@
 import torch.optim
 import torch.nn as nn
-from ..models.hinet import Hinet
+from models.hinet import Hinet
 import numpy as np
 import random
 

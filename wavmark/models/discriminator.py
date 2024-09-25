@@ -10,7 +10,7 @@ class Discriminator(nn.Module):
         self.conv4 = nn.Conv1d(in_channels=64, out_channels=128, kernel_size=3, stride=2, padding=1)
         
         self.flatten = nn.Flatten()
-        self.fc = nn.Linear(128 * (input_size // 16), 1)
+        self.fc = nn.Linear(128 * (16000 // 16), 1)
         self.sigmoid = nn.Sigmoid()
 
     def forward(self, x):

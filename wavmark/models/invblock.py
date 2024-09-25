@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-from ..models.rrdb_denselayer import ResidualDenseBlock_out
+from models.rrdb_denselayer import ResidualDenseBlock_out
 
 
 class INV_block(nn.Module):

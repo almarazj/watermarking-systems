@@ -9,7 +9,7 @@ from torch.utils.data import Dataset
 import random
 
 
-def get_loader(seed: int, config: dict) -> Dict[str, DataLoader]:
+def get_loader(seed: int, paths: dict, batch_size: int) -> Dict[str, DataLoader]:
     """
     Creates PyTorch DataLoaders for training, development, and evaluation datasets.
 
@@ -17,7 +17,7 @@ def get_loader(seed: int, config: dict) -> Dict[str, DataLoader]:
     ----------
     seed : int
         The seed for random number generation to ensure reproducibility.
-    config : dict
+    paths : dict
         A dictionary containing paths and parameters required for creating DataLoaders.
 
     Returns
@@ -28,27 +28,19 @@ def get_loader(seed: int, config: dict) -> Dict[str, DataLoader]:
 
     loaders = {}
 
-    # Paths and protocol files
-    trn_set_path = config.get("train_set_path")
-    dev_set_path = config.get("dev_set_path")
-    eval_set_path = config.get("eval_set_path")
-    trn_list_path = config.get("train_set_protocol")
-    dev_list_path = config.get("dev_set_protocol")
-    eval_list_path = config.get("eval_set_protocol")
-
     # Training
-    if trn_set_path and trn_list_path and os.path.exists(trn_set_path) and os.path.exists(trn_list_path):
+    if paths.get("train_set_path") and paths.get("train_set_protocol") and os.path.exists(paths.get("train_set_path")) and os.path.exists(paths.get("train_set_protocol")):
         
-        file_train = gen_spoof_list(dir_meta=trn_list_path)
+        file_train = gen_spoof_list(dir=paths.get("train_set_protocol"))
         print("no. training files:", len(file_train))
 
-        train_set = GetDataset(list_IDs=file_train, base_dir=trn_set_path)
+        train_set = GetDataset(list_IDs=file_train, base_dir=paths.get("train_set_path"))
 
         gen = torch.Generator()
         gen.manual_seed(seed)
 
         trn_loader = DataLoader(train_set,
-                                batch_size=config.get("batch_size", 24),
+                                batch_size=batch_size,
                                 shuffle=True,
                                 drop_last=True,
                                 pin_memory=True,
@@ -58,14 +50,14 @@ def get_loader(seed: int, config: dict) -> Dict[str, DataLoader]:
         loaders["train"] = trn_loader
 
     # Validation
-    if dev_set_path and dev_list_path and os.path.exists(dev_set_path) and os.path.exists(dev_list_path):
-        _, file_dev = gen_spoof_list(dir_meta=dev_list_path)
+    if paths.get("dev_set_path") and paths.get("dev_set_protocol") and os.path.exists(paths.get("dev_set_path")) and os.path.exists(paths.get("dev_set_protocol")):
+        file_dev = gen_spoof_list(dir=paths.get("dev_set_protocol"))
         print("no. validation files:", len(file_dev))
 
-        dev_set = GetDataset(list_IDs=file_dev, base_dir=dev_set_path)
+        dev_set = GetDataset(list_IDs=file_dev, base_dir=paths.get("dev_set_path"))
 
         dev_loader = DataLoader(dev_set,
-                                batch_size=config.get("batch_size", 24),
+                                batch_size=batch_size,
                                 shuffle=False,
                                 drop_last=False,
                                 pin_memory=True)
@@ -73,14 +65,14 @@ def get_loader(seed: int, config: dict) -> Dict[str, DataLoader]:
         loaders["dev"] = dev_loader
 
     # Evaluation
-    if eval_set_path and eval_list_path and os.path.exists(eval_set_path) and os.path.exists(eval_list_path):
-        file_eval = gen_spoof_list(dir_meta=eval_list_path)
+    if paths.get("eval_set_path") and paths.get("eval_set_protocol") and os.path.exists(paths.get("eval_set_path")) and os.path.exists(paths.get("eval_set_protocol")):
+        file_eval = gen_spoof_list(dir=paths.get("eval_set_protocol"))
         print("no. evaluation files:", len(file_eval))
 
-        eval_set = GetDataset(list_IDs=file_eval, base_dir=eval_set_path)
+        eval_set = GetDataset(list_IDs=file_eval, base_dir=paths.get("eval_set_path"))
 
         eval_loader = DataLoader(eval_set,
-                                 batch_size=config.get("batch_size", 24),
+                                 batch_size=batch_size,
                                  shuffle=False,
                                  drop_last=False,
                                  pin_memory=True)
@@ -103,11 +95,12 @@ class GetDataset(Dataset):
 
     def __getitem__(self, index):
         key = self.list_IDs[index]
-        file_path = self.base_dir / f"{key}.wav"
-        x,  = sf.read(file_path)
+        file_path = os.path.join(self.base_dir, f"{key}.wav")
+        x, _ = sf.read(file_path)
         x_pad = pad_random(x, self.cut)
         x_inp = Tensor(x_pad)
-        return x_inp
+        message = Tensor(np.random.choice([0, 1], size=16))
+        return x_inp, message
         
 def gen_spoof_list(dir):
     """
