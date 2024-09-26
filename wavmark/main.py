@@ -7,6 +7,7 @@ from models.discriminator import Discriminator
 from models.my_model import Model
 import json
 from utils.get_dataloader import get_loader
+from pathlib import Path
 
 def train_epoch(
     trn_loader: DataLoader,
@@ -70,6 +71,7 @@ def train(loaders,
         print(f"Epoch: {epoch}")
         train_loss = train_epoch(loaders["train"], model, discriminator, model_optimizer, disc_optimizer, device)
         train_losses.append(train_loss)
+    
         
         
 def get_data_paths(conf_path: str) -> dict:
@@ -93,7 +95,7 @@ def main():
         }
     
     conf_path = "./datasets/paths.conf"
-    data_paths = get_data_paths(conf_path)
+    paths = get_data_paths(conf_path)
     
     # 1.load model
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
@@ -107,9 +109,10 @@ def main():
                   hop_length=config["HOP_LENGTH"],
                   num_layers=config["NUM_LAYERS"]).to(device)
     
-    loaders = get_loader(config["SEED"], data_paths, config["BATCH_SIZE"])
+    loaders = get_loader(config, paths)
     
     train(loaders, model, discriminator, device, config)
+    torch.save(model.state_dict(), Path(paths["save_folder"]) / "best.pth")
     
 if __name__ == '__main__':   
     main()
