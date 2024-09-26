@@ -9,7 +9,7 @@ from torch.utils.data import Dataset
 import random
 
 
-def get_loader(seed: int, paths: dict, batch_size: int) -> Dict[str, DataLoader]:
+def get_loader(config: dict, paths: dict) -> Dict[str, DataLoader]:
     """
     Creates PyTorch DataLoaders for training, development, and evaluation datasets.
 
@@ -37,10 +37,10 @@ def get_loader(seed: int, paths: dict, batch_size: int) -> Dict[str, DataLoader]
         train_set = GetDataset(list_IDs=file_train, base_dir=paths.get("train_set_path"))
 
         gen = torch.Generator()
-        gen.manual_seed(seed)
+        gen.manual_seed(config["SEED"])
 
         trn_loader = DataLoader(train_set,
-                                batch_size=batch_size,
+                                batch_size=config["BATCH_SIZE"],
                                 shuffle=True,
                                 drop_last=True,
                                 pin_memory=True,
@@ -57,7 +57,7 @@ def get_loader(seed: int, paths: dict, batch_size: int) -> Dict[str, DataLoader]
         dev_set = GetDataset(list_IDs=file_dev, base_dir=paths.get("dev_set_path"))
 
         dev_loader = DataLoader(dev_set,
-                                batch_size=batch_size,
+                                batch_size=config["BATCH_SIZE"],
                                 shuffle=False,
                                 drop_last=False,
                                 pin_memory=True)
@@ -72,7 +72,7 @@ def get_loader(seed: int, paths: dict, batch_size: int) -> Dict[str, DataLoader]
         eval_set = GetDataset(list_IDs=file_eval, base_dir=paths.get("eval_set_path"))
 
         eval_loader = DataLoader(eval_set,
-                                 batch_size=batch_size,
+                                 batch_size=config["BATCH_SIZE"],
                                  shuffle=False,
                                  drop_last=False,
                                  pin_memory=True)
