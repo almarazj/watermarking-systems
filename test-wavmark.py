@@ -7,6 +7,8 @@ import matplotlib.pyplot as plt
 from pathlib import Path
 import wavmark
 from pesq import pesq
+import time
+
 
 def load_files(folder_path):
     """
@@ -29,7 +31,7 @@ def load_files(folder_path):
         # Load every wav file
         data, sr = sf.read(wav_file)
         audio_data.append(data)
-        filenames.append(wav_file.name)  # Save the filename for future use
+        filenames.append(wav_file.stem)  # Save the filename for future use
     
     return audio_data, filenames
 
@@ -58,7 +60,7 @@ def signal_noise_ratio(original, signal_watermarked):
     ratio = max(1e-10, ratio)
     return 10 * np.log10(ratio)
 
-def save_results(file_name, snr, ber, pesq_score, output_file):
+def save_results(file_name, snr, ber, pesq_score, time_elapsed, output_file):
     """
     Saves the results to a text file.
 
@@ -66,10 +68,12 @@ def save_results(file_name, snr, ber, pesq_score, output_file):
         file_name (str): The name of the original audio file.
         snr (float): Signal-to-noise ratio.
         ber (float): Bit Error Rate.
+        pesq_score (float): PESQ score.
+        time_elapsed (float): Time taken for processing the file.
         output_file (Path): Path to the output file.
     """
     with open(output_file, 'a') as f:
-        f.write(f"{file_name} {snr:.2f} {pesq_score:.2f} {ber:.2f}\n")
+        f.write(f"{file_name} {snr:.2f} {pesq_score:.2f} {ber:.2f} {time_elapsed:.2f}\n")
 
 def plot_results(original, watermark_signal, watermarked_signal, sr, filename, results_folder):
     """
@@ -147,11 +151,14 @@ def main(signal_path, wm_path, wmd_signal_path, results_folder):
         
     # 4. Encode watermark and save the watermarked signals, watermark, and calculate SNR and BER
     for audio, filename in zip(audio_data, filenames):
+        
+        start_time = time.time()
         # Encode watermark
         watermarked_signal, _ = wavmark.encode_watermark(model, audio, payload, show_progress=True)
         
         # Save the watermarked signal as a new wav file in wmd_signal_path
-        watermarked_filename = f"wmd_{filename}"
+        filename_modified = filename.replace('_or', '') + '_wm'
+        watermarked_filename = f"{filename_modified}.wav"
         watermarked_filepath = wmd_signal_path / watermarked_filename
         sf.write(watermarked_filepath, watermarked_signal, 16000)
         
@@ -162,7 +169,7 @@ def main(signal_path, wm_path, wmd_signal_path, results_folder):
         amplified_watermark_signal = watermark_signal * 5
         
         # Save the amplified watermark signal in wm_path
-        watermark_filename = f"wm_{filename}"
+        watermark_filename = f"wm_{filename}.wav"
         watermark_filepath = wm_path / watermark_filename
         sf.write(watermark_filepath, amplified_watermark_signal, 16000)
 
@@ -181,20 +188,23 @@ def main(signal_path, wm_path, wmd_signal_path, results_folder):
         print(f'Original: {audio.shape}, wmd: {watermarked_signal.shape}')
         pesq_score = pesq(16000, audio, watermarked_signal)
         print(f'pesq score for {filename}: {pesq_score:.2f}')
+        
+        end_time = time.time()  # <-- Captura el tiempo al final del procesamiento
+        time_elapsed = end_time - start_time
+        
         # Save results
         results_file = results_folder / 'results.txt'
-        save_results(filename, snr, ber, pesq_score, results_file)
+        save_results(filename, snr, ber, pesq_score, time_elapsed, results_file)
         
         # 8. Plot the spectrograms of original, watermark, and watermarked signals
         plot_results(audio, watermark_signal, watermarked_signal, 16000, filename, results_folder)
 
 if __name__ == '__main__':
     # Define the paths
-    signal_path = Path('audio-files/wavmark/signal')
+    signal_path = Path('audio-files/original')
     wm_path = Path('audio-files/wavmark/watermark')
     wmd_signal_path = Path('audio-files/wavmark/wmd-signal')
     results_folder = Path('audio-files/wavmark/results')  # Path for the results file
     results_folder.mkdir(parents=True, exist_ok=True)
-    print('a ver si imprime esto')
     # Run the main function
     main(signal_path, wm_path, wmd_signal_path, results_folder)

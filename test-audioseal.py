@@ -7,6 +7,8 @@ import matplotlib.pyplot as plt
 from pathlib import Path
 from audioseal import AudioSeal
 from pesq import pesq
+import time
+
 
 def load_wav_files(folder_path):
     """
@@ -63,7 +65,7 @@ def signal_noise_ratio(original, signal_watermarked):
     ratio = signal_strength / noise_strength
     return 10 * np.log10(ratio)
 
-def save_results(file_name, snr, ber, pesq_score, output_file):
+def save_results(file_name, snr, ber, pesq_score, time_elapsed, output_file):
     """
     Saves the results to a text file.
 
@@ -71,10 +73,12 @@ def save_results(file_name, snr, ber, pesq_score, output_file):
         file_name (str): The name of the original audio file.
         snr (float): Signal-to-noise ratio.
         ber (float): Bit Error Rate.
+        pesq_score (float): PESQ score.
+        time_elapsed (float): Time taken for processing the file.
         output_file (Path): Path to the output file.
     """
     with open(output_file, 'a') as f:
-        f.write(f"{file_name} {snr:.2f} {pesq_score} {ber:.2f}\n")
+        f.write(f"{file_name} {snr:.2f} {pesq_score:.2f} {ber:.2f} {time_elapsed:.2f}\n")
 
 def plot_results(original, watermark_signal, watermarked_signal, sr, filename, results_folder):
     """
@@ -101,28 +105,33 @@ def plot_results(original, watermark_signal, watermarked_signal, sr, filename, r
     watermark_spectrogram = np.clip(watermark_spectrogram, -80, 0)
     watermarked_spectrogram = np.clip(watermarked_spectrogram, -80, 0)
     
-    plt.figure(figsize=(18, 6))
+    plt.figure(figsize=(9, 3))
 
-    plt.subplot(1, 3, 1)
+    plt.subplot(1, 2, 1)
     librosa.display.specshow(original_spectrogram, sr=sr, x_axis='time', y_axis='log', vmin=-80, vmax=0)
+    plt.xlabel('Tiempo [s]')
+    plt.ylabel('Frecuencia [Hz]')
     plt.colorbar(format='%+2.0f dB')
     plt.title(f'Audio original - {filename}')
 
-    plt.subplot(1, 3, 2)
-    librosa.display.specshow(watermark_spectrogram, sr=sr, x_axis='time', y_axis='log', vmin=-80, vmax=0)
-    plt.colorbar(format='%+2.0f dB')
-    plt.title('Marca de agua')
+    # plt.subplot(1, 3, 2)
+    # librosa.display.specshow(watermark_spectrogram, sr=sr, x_axis='time', y_axis='log', vmin=-80, vmax=0)
+    # plt.colorbar(format='%+2.0f dB')
+    # plt.title('Marca de agua')
 
-    plt.subplot(1, 3, 3)
+    plt.subplot(1, 2, 2)
     librosa.display.specshow(watermarked_spectrogram, sr=sr, x_axis='time', y_axis='log', vmin=-80, vmax=0)
+    plt.xlabel('Tiempo [s]')
+    plt.ylabel('Frecuencia [Hz]')
     plt.colorbar(format='%+2.0f dB')
     plt.title('Audio + marca de agua')
 
     plt.tight_layout()
     # Save the figure as a PNG file
-    output_file_path = results_folder / f"spectrogram_{filename}.png"
+    output_file_path = results_folder / f"spectrogram_{filename}.svg"
     plt.savefig(output_file_path, format='png')
-    plt.close()  # Close the figure to free memory
+    plt.show()
+    #plt.close()  # Close the figure to free memory
 
 def main(signal_path, wm_path, wmd_signal_path, results_folder):
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
@@ -138,6 +147,7 @@ def main(signal_path, wm_path, wmd_signal_path, results_folder):
     audio_data = load_wav_files(signal_path)
     
     for file_name, audio, sr in audio_data:
+        start_time = time.time()
         # Convertir el audio a tensor y asegurar que sea del tipo correcto
         audio_tensor = torch.tensor(audio, dtype=torch.float32).unsqueeze(0)  # Añadir dimensión de batch
         audio_tensor = audio_tensor.unsqueeze(0)  # Añadir dimensión de canales (para audio mono)
@@ -158,7 +168,8 @@ def main(signal_path, wm_path, wmd_signal_path, results_folder):
         watermarked_audio = audio + watermark
         
         # Save watermarked audio
-        watermarked_file = wmd_signal_path / f"wmd_{file_name}.wav"
+        file_name_modified = file_name.replace('_or', '') + '_as'
+        watermarked_file = wmd_signal_path / f"{file_name_modified}.wav"
         sf.write(watermarked_file, watermarked_audio, sr)
         
         # Save watermark signal (amplified)
@@ -183,17 +194,18 @@ def main(signal_path, wm_path, wmd_signal_path, results_folder):
         print(f'Decoded message:  {detected_message}')
         ber = (msg != detected_message).mean() * 100
         
-        
+        end_time = time.time()  # <-- Captura el tiempo al final del procesamiento
+        time_elapsed = end_time - start_time
         
         # Save results
         results_file = results_folder / 'results.txt'
-        save_results(file_name, snr, ber, pesq_score, results_file)
+        save_results(file_name, snr, ber, pesq_score, time_elapsed, results_file)
         
         # Plot results
         plot_results(audio, watermark_amplified, watermarked_audio, sr, file_name, results_folder)
 
 if __name__ == '__main__':
-    signal_path = Path('audio-files/audioseal/signal')
+    signal_path = Path('audio-files/original')
     wm_path = Path('audio-files/audioseal/watermark')
     wmd_signal_path = Path('audio-files/audioseal/wmd-signal')
     results_folder = Path('audio-files/audioseal/results')
