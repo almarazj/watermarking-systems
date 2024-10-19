@@ -135,6 +135,7 @@ def plot_results(original, watermark_signal, watermarked_signal, sr, filename, r
 
 def main(signal_path, wm_path, wmd_signal_path, results_folder):
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+    print(f'Device: {device}')
     
     # Load AudioSeal generator and detector models
     generator_model = AudioSeal.load_generator("audioseal_wm_16bits").to(device)
@@ -202,10 +203,10 @@ def main(signal_path, wm_path, wmd_signal_path, results_folder):
         save_results(file_name, snr, ber, pesq_score, time_elapsed, results_file)
         
         # Plot results
-        plot_results(audio, watermark_amplified, watermarked_audio, sr, file_name, results_folder)
+        # plot_results(audio, watermark_amplified, watermarked_audio, sr, file_name, results_folder)
 
 if __name__ == '__main__':
-    signal_path = Path('audio-files/original')
+    signal_path = Path('D:/Music/datasets/Dataset/HABLA-spoofed')
     wm_path = Path('audio-files/audioseal/watermark')
     wmd_signal_path = Path('audio-files/audioseal/wmd-signal')
     results_folder = Path('audio-files/audioseal/results')
