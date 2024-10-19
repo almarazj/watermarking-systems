@@ -197,14 +197,14 @@ def main(signal_path, wm_path, wmd_signal_path, results_folder):
         save_results(filename, snr, ber, pesq_score, time_elapsed, results_file)
         
         # 8. Plot the spectrograms of original, watermark, and watermarked signals
-        plot_results(audio, watermark_signal, watermarked_signal, 16000, filename, results_folder)
+        #plot_results(audio, watermark_signal, watermarked_signal, 16000, filename, results_folder)
 
 if __name__ == '__main__':
     # Define the paths
-    signal_path = Path('audio-files/original')
+    signal_path = Path('D:/Music/datasets/Dataset/HABLA-spoofed')
     wm_path = Path('audio-files/wavmark/watermark')
     wmd_signal_path = Path('audio-files/wavmark/wmd-signal')
-    results_folder = Path('audio-files/wavmark/results')  # Path for the results file
+    results_folder = Path('audio-files/wavmark/results')
     results_folder.mkdir(parents=True, exist_ok=True)
     # Run the main function
     main(signal_path, wm_path, wmd_signal_path, results_folder)
