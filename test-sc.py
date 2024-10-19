@@ -60,7 +60,7 @@ def signal_noise_ratio(original, signal_watermarked):
     ratio = max(1e-10, ratio)
     return 10 * np.log10(ratio)
 
-def save_results(file_name, snr, pesq_score, time_elapsed, output_file):
+def save_results(file_name, snr, ber, pesq_score, time_elapsed, output_file):
     """
     Saves the results to a text file.
 
@@ -73,7 +73,10 @@ def save_results(file_name, snr, pesq_score, time_elapsed, output_file):
         output_file (Path): Path to the output file.
     """
     with open(output_file, 'a') as f:
-        f.write(f"{file_name} {snr:.2f} {pesq_score:.2f} {time_elapsed:.2f}\n")
+        if ber == '-':
+            f.write(f"{file_name} {snr:.2f} {pesq_score:.2f} {ber} {time_elapsed:.2f}\n")
+        else:
+            f.write(f"{file_name} {snr:.2f} {pesq_score:.2f} {ber:.2f} {time_elapsed:.2f}\n")
 
 def plot_results(original, watermark_signal, watermarked_signal, sr, filename, results_folder):
     """
@@ -138,10 +141,6 @@ def main(signal_path, wm_path, wmd_signal_path, results_folder):
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
     model = silentcipher.get_model(model_type='44.1k', device=device)
 
-    # 2. Create 16-bit payload
-    payload = [123, 234, 111, 222, 11]
-    print("Payload:", payload)
-
     # 3. Read host audio files
     audio_data, filenames = load_files(signal_path)
 
@@ -153,8 +152,12 @@ def main(signal_path, wm_path, wmd_signal_path, results_folder):
     for audio, filename in zip(audio_data, filenames):
         
         start_time = time.time()
+        
+        # 2. Create 16-bit payload
+        payload = np.random.randint(0, 256, size=5).tolist()
+        print("Payload:", payload)
         # Encode watermark
-        watermarked_signal, _ = model.encode_wav(audio, SR, [123, 234, 111, 222, 11], message_sdr=None, calc_sdr=True, disable_checks=False)
+        watermarked_signal, _ = model.encode_wav(audio, SR, payload, message_sdr=None, calc_sdr=True, disable_checks=False)
         
         resample_wm_signal = librosa.resample(watermarked_signal, orig_sr=SR, target_sr=16000)
         resample_audio = librosa.resample(audio, orig_sr=SR, target_sr=16000)
@@ -179,37 +182,43 @@ def main(signal_path, wm_path, wmd_signal_path, results_folder):
         # 5. Decode watermark
         result = model.decode_wav(watermarked_signal, SR, phase_shift_decoding=False)
         
-
         
-        print(result['status'])
-        print(result['messages'][0] == payload)
-        print(result['confidences'][0])
-
         # 6. Calculate SNR
         snr = signal_noise_ratio(resample_audio, resample_wm_signal)
-        print(f"SNR for {filename}: {snr:.2f} dB")
-        
-
         pesq_score = pesq(16000, resample_audio, resample_wm_signal)
         
+        print(f"SNR for {filename}: {snr:.2f} dB")
         print(f'pesq score for {filename}: {pesq_score:.2f}')
+        
         # Save results
-        
-        end_time = time.time()  # <-- Captura el tiempo al final del procesamiento
+        end_time = time.time()
         time_elapsed = end_time - start_time
-        
         results_file = results_folder / 'results.txt'
-        save_results(filename, snr, pesq_score, time_elapsed, results_file)
+        
+        if result['status'] == True:
+            print(f'Original message: {payload}')
+            print(f"Reconstructed message: {result['messages'][0]}")
+            print(result['confidences'][0])
+
+            payload_40bit = [int(bit) for num in payload for bit in np.binary_repr(num, width=8)]
+            result_40bit = [int(bit) for num in result['messages'][0] for bit in np.binary_repr(num, width=8)]
+            ber = (np.array(payload_40bit) != np.array(result_40bit)).mean() * 100
+            
+            save_results(filename, snr, ber, pesq_score, time_elapsed, results_file)
+        else:
+            print(result['error'])
+            ber = '-'
+            save_results(filename, snr, ber, pesq_score, time_elapsed, results_file)
         
         # 8. Plot the spectrograms of original, watermark, and watermarked signals
-        plot_results(audio, watermark_signal, watermarked_signal, SR, filename, results_folder)
+        #plot_results(audio, watermark_signal, watermarked_signal, SR, filename, results_folder)
 
 if __name__ == '__main__':
     # Define the paths
-    signal_path = Path('audio-files/original')
-    wm_path = Path('audio-files/sc/watermark')
-    wmd_signal_path = Path('audio-files/sc/wmd-signal')
-    results_folder = Path('audio-files/sc/results') 
+    signal_path = Path('D:/Music/datasets/Dataset/HABLA-spoofed')
+    wm_path = Path('audio-files/silentcipher/watermark')
+    wmd_signal_path = Path('audio-files/silentcipher/wmd-signal')
+    results_folder = Path('audio-files/silentcipher/results')
     results_folder.mkdir(parents=True, exist_ok=True)
     # Run the main function
     SR = 44100
