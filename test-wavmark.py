@@ -60,7 +60,7 @@ def signal_noise_ratio(original, signal_watermarked):
     ratio = max(1e-10, ratio)
     return 10 * np.log10(ratio)
 
-def save_results(file_name, snr, ber, pesq_score, time_elapsed, output_file):
+def save_results(file_name, snr, ber, pesq_score, time_elapsed, payload, output_file):
     """
     Saves the results to a text file.
 
@@ -73,7 +73,7 @@ def save_results(file_name, snr, ber, pesq_score, time_elapsed, output_file):
         output_file (Path): Path to the output file.
     """
     with open(output_file, 'a') as f:
-        f.write(f"{file_name} {snr:.2f} {pesq_score:.2f} {ber:.2f} {time_elapsed:.2f}\n")
+        f.write(f"{file_name} {snr:.2f} {pesq_score:.2f} {ber:.2f} {time_elapsed:.2f} {payload}\n")
 
 def plot_results(original, watermark_signal, watermarked_signal, sr, filename, results_folder):
     """
@@ -194,7 +194,7 @@ def main(signal_path, wm_path, wmd_signal_path, results_folder):
         
         # Save results
         results_file = results_folder / 'results.txt'
-        save_results(filename, snr, ber, pesq_score, time_elapsed, results_file)
+        save_results(filename, snr, ber, pesq_score, time_elapsed, payload, results_file)
         
         # 8. Plot the spectrograms of original, watermark, and watermarked signals
         #plot_results(audio, watermark_signal, watermarked_signal, 16000, filename, results_folder)
@@ -208,3 +208,5 @@ if __name__ == '__main__':
     results_folder.mkdir(parents=True, exist_ok=True)
     # Run the main function
     main(signal_path, wm_path, wmd_signal_path, results_folder)
+    
+    # python3 .\test-wavmark.py > audio-files/wavmark/results/console_output.txt 2>&1
