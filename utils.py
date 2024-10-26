@@ -63,7 +63,7 @@ def signal_noise_ratio(original, signal_watermarked):
     ratio = signal_strength / noise_strength
     return 10 * np.log10(ratio)
 
-def save_results(file_name, snr, pesq_score, ber, time_elapsed, msg, output_file):
+def save_results(file_name, snr, pesq_score, ber, encode_time, decode_time, msg, output_file):
     """
     Saves the results to a CSV file.
 
@@ -85,6 +85,6 @@ def save_results(file_name, snr, pesq_score, ber, time_elapsed, msg, output_file
         writer = csv.writer(f)
         # Write the header if the file doesn't exist
         if not file_exists:
-            writer.writerow(["file_name", "snr", "pesq_score", "ber", "time_elapsed", "msg"])
+            writer.writerow(["file_name", "snr", "pesq_score", "ber", "encode_time", "decode_time", "msg"])
         # Write the data
-        writer.writerow([file_name, f"{snr:.2f}", f"{pesq_score:.2f}", f"{ber:.2f}", f"{time_elapsed:.2f}", msg_str])
+        writer.writerow([file_name, f"{snr:.2f}", f"{pesq_score:.2f}", f"{ber:.2f}", f"{encode_time:.2f}", f"{decode_time:.2f}", msg_str])

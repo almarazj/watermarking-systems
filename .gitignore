@@ -4,3 +4,4 @@
 *png
 datasets/
 subjective_test/
+__pycache__/
