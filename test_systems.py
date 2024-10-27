@@ -155,20 +155,20 @@ if __name__ == '__main__':
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
     print(f'Device: {device}.')
     
-    input_path = Path('D:/Music/datasets/Dataset/HABLA-spoofed')
-    output_path = Path('audio-files/silentcipher/watermarked')
-    results_folder = Path('audio-files/silentcipher/results')
+    # input_path = Path('D:/Music/datasets/Dataset/HABLA-spoofed')
+    # output_path = Path('audio-files/silentcipher/watermarked')
+    # results_folder = Path('audio-files/silentcipher/results')
 
-    test_silentcipher(input_path, output_path, results_folder)
-    
-    input_path = Path('D:/Music/datasets/Dataset/HABLA-spoofed')
-    output_path = Path('audio-files/wavmark/watermarked')
-    results_folder = Path('audio-files/wavmark/results')
-    
-    test_wavmark(input_path, output_path, results_folder)
+    # test_silentcipher(input_path, output_path, results_folder)
         
     input_path = Path('D:/Music/datasets/Dataset/HABLA-spoofed')
     output_path = Path('audio-files/audioseal/watermarked')
     results_folder = Path('audio-files/audioseal/results')
     
     test_audioseal(input_path, output_path, results_folder)
+    
+    input_path = Path('D:/Music/datasets/Dataset/HABLA-spoofed')
+    output_path = Path('audio-files/wavmark/watermarked')
+    results_folder = Path('audio-files/wavmark/results')
+    
+    test_wavmark(input_path, output_path, results_folder)
