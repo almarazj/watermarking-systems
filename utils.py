@@ -88,3 +88,12 @@ def save_results(file_name, snr, pesq_score, ber, encode_time, decode_time, msg,
             writer.writerow(["file_name", "snr", "pesq_score", "ber", "encode_time", "decode_time", "msg"])
         # Write the data
         writer.writerow([file_name, f"{snr:.2f}", f"{pesq_score:.2f}", f"{ber:.2f}", f"{encode_time:.2f}", f"{decode_time:.2f}", msg_str])
+
+def save_ber(file_name, current_ber, new_ber, output_file):
+    # Check if the file already exists to write the header only once
+    file_exists = Path(output_file).exists()
+    with open(output_file, 'a', newline='') as f:
+        writer = csv.writer(f)
+        if not file_exists:
+            writer.writerow(["file_name", "ber", "ber_opus_6k"])
+        writer.writerow([file_name, f"{current_ber:.2f}", f"{new_ber:.2f}"])
