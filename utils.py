@@ -2,6 +2,7 @@ import csv
 import numpy as np
 import soundfile as sf
 from pathlib import Path
+import librosa
 
 def load_files(folder_path):
     """
@@ -21,7 +22,8 @@ def load_files(folder_path):
     
     for wav_file in wav_files:
         # Load every wav file
-        data, sr = sf.read(wav_file)
+        data, sr = librosa.load(wav_file, sr=16000, mono=True)
+
         filename = wav_file.stem  # Save the filename for future use
         audio_data.append((filename, data, sr))
         

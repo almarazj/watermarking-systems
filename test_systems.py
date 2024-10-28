@@ -161,11 +161,11 @@ if __name__ == '__main__':
 
     # test_silentcipher(input_path, output_path, results_folder)
         
-    input_path = Path('D:/Music/datasets/Dataset/HABLA-spoofed')
-    output_path = Path('audio-files/audioseal/watermarked')
-    results_folder = Path('audio-files/audioseal/results')
+    # input_path = Path('D:/Music/datasets/Dataset/HABLA-spoofed')
+    # output_path = Path('audio-files/audioseal/watermarked')
+    # results_folder = Path('audio-files/audioseal/results')
     
-    test_audioseal(input_path, output_path, results_folder)
+    # test_audioseal(input_path, output_path, results_folder)
     
     input_path = Path('D:/Music/datasets/Dataset/HABLA-spoofed')
     output_path = Path('audio-files/wavmark/watermarked')
