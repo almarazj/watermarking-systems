@@ -119,7 +119,7 @@ def test_ber_as():
 
 def test_ber_wm():
     
-    input_path = Path('audio-files/wavmark/opus_24k_to_wav')
+    input_path = Path('audio-files/wavmark/opus_12k_to_wav')
     results_folder = Path('audio-files/wavmark/results')
 
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
@@ -147,7 +147,7 @@ def test_ber_wm():
 
             current_ber = df.loc[df['file_name'] == file_name, 'ber'].values
             
-            print(f'original: {msg} (type {type(msg)}). Decoded: {decoded_msg} (type: {type(decoded_msg)})')
+            print(f'original: {msg} (type {type(msg)}). Decoded: {decoded_msg} (type: {type(decoded_msg)}). SR: {sr}')
 
             new_ber = 100
             if decoded_msg is not None:
@@ -171,6 +171,6 @@ if __name__ == '__main__':
     
     # Elegir una
     
-    test_ber_sc()
+    # test_ber_sc()
     # test_ber_as()
-    # test_ber_wm()
+    test_ber_wm()

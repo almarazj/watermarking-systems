@@ -85,22 +85,25 @@ def test_silentcipher(input_path, output_path, results_folder):
             audio_44 = librosa.resample(audio_16, orig_sr=sr, target_sr=target_sr)
             
             t1 = time.time()
-            audio_watermarked_44, _ = model.encode_wav(audio_44, target_sr, msg, message_sdr=47, calc_sdr=True, disable_checks=False)
+            audio_watermarked_44, _ = model.encode_wav(audio_44, target_sr, msg, calc_sdr=True, disable_checks=False)
             t2 = time.time()
             encode_time = t2 - t1
             
             audio_watermarked_16 = librosa.resample(audio_watermarked_44, orig_sr=target_sr, target_sr=sr)
             
-            watermarked_filepath = output_path / f"{file_name}.wav"
-            sf.write(watermarked_filepath, audio_watermarked_16, 16000)
+            watermarked_filepath_16 = Path('audio-files/silentcipher/watermarked_16k') / f"{file_name}.wav"
+            sf.write(watermarked_filepath_16, audio_watermarked_16, 16000)
+            
+            watermarked_filepath_44 = output_path / f"{file_name}.wav"
+            sf.write(watermarked_filepath_44, audio_watermarked_44, 44100)
 
             t1 = time.time()
             result = model.decode_wav(audio_watermarked_44, target_sr, phase_shift_decoding=False)
             t2 = time.time()
             decode_time = t2 - t1
             
-            snr = signal_noise_ratio(audio_16, audio_watermarked_16)
-            pesq_score = pesq(16000, audio_16, audio_watermarked_16)
+            snr = signal_noise_ratio(audio_44, audio_watermarked_44)
+            pesq_score = pesq(16000, audio_44, audio_watermarked_44)
             ber = 100
             
             if result['status']:
@@ -155,11 +158,11 @@ if __name__ == '__main__':
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
     print(f'Device: {device}.')
     
-    # input_path = Path('D:/Music/datasets/Dataset/HABLA-spoofed')
-    # output_path = Path('audio-files/silentcipher/watermarked')
-    # results_folder = Path('audio-files/silentcipher/results')
+    input_path = Path('D:/Music/datasets/Dataset/HABLA-spoofed')
+    output_path = Path('audio-files/silentcipher/watermarked')
+    results_folder = Path('audio-files/silentcipher/results')
 
-    # test_silentcipher(input_path, output_path, results_folder)
+    test_silentcipher(input_path, output_path, results_folder)
         
     # input_path = Path('D:/Music/datasets/Dataset/HABLA-spoofed')
     # output_path = Path('audio-files/audioseal/watermarked')
@@ -167,8 +170,8 @@ if __name__ == '__main__':
     
     # test_audioseal(input_path, output_path, results_folder)
     
-    input_path = Path('D:/Music/datasets/Dataset/HABLA-spoofed')
-    output_path = Path('audio-files/wavmark/watermarked')
-    results_folder = Path('audio-files/wavmark/results')
+    # input_path = Path('D:/Music/datasets/Dataset/HABLA-spoofed')
+    # output_path = Path('audio-files/wavmark/watermarked')
+    # results_folder = Path('audio-files/wavmark/results')
     
-    test_wavmark(input_path, output_path, results_folder)
+    # test_wavmark(input_path, output_path, results_folder)

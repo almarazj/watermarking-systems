@@ -97,5 +97,5 @@ def save_ber(file_name, current_ber, new_ber, output_file):
     with open(output_file, 'a', newline='') as f:
         writer = csv.writer(f)
         if not file_exists:
-            writer.writerow(["file_name", "ber", "ber_opus_6k"])
+            writer.writerow(["file_name", "ber", "ber_opus_12k"])
         writer.writerow([file_name, f"{current_ber:.2f}", f"{new_ber:.2f}"])
